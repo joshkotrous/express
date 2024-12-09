@@ -1,3 +1,6 @@
+const express = require('express');
+const session = require('express-session');
+
 'use strict'
 
 /**
@@ -19,10 +22,6 @@ app.set('views', path.join(__dirname, 'views'));
 // middleware
 
 app.use(express.urlencoded())
-app.use(session({
-  resave: false, // don't save session if unmodified
-  saveUninitialized: false, // don't create session until something stored
-  secret: 'shhhh, very secret'
 }));
 
 // Session-persisted message middleware
