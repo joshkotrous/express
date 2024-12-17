@@ -16,9 +16,12 @@ var app = express();
 app.use(session({
   resave: false, // don't save session if unmodified
   saveUninitialized: false, // don't create session until something stored
-  secret: 'keyboard cat'
+  secret: process.env.SESSION_SECRET || require('crypto').randomBytes(32).toString('hex'),
+  cookie: {
+    secure: true,
+    httpOnly: true
+  }
 }));
-
 app.get('/', function(req, res){
   var body = '';
   if (req.session.views) {
