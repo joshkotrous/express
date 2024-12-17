@@ -22,9 +22,20 @@ app.use(express.urlencoded())
 app.use(session({
   resave: false, // don't save session if unmodified
   saveUninitialized: false, // don't create session until something stored
-  secret: 'shhhh, very secret'
+  secret: process.env.SESSION_SECRET || 'shhhh, very secret',
+  cookie: {
+    secure: true, // requires HTTPS
+    httpOnly: true,
+    sameSite: 'strict',
+    maxAge: 1000 * 60 * 60 * 24, // 24 hours
+    path: '/',
+    domain: process.env.COOKIE_DOMAIN || undefined
+  }
 }));
 
+if (app.get('env') === 'production') {
+  app.set('trust proxy', 1);
+}
 // Session-persisted message middleware
 
 app.use(function(req, res, next){
