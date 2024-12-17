@@ -2,6 +2,7 @@
 
 // install redis first:
 // https://redis.io/
+var crypto = require('crypto');
 
 // then:
 // $ npm install redis
@@ -16,12 +17,14 @@ var app = express();
 app.use(session({
   resave: false, // don't save session if unmodified
   saveUninitialized: false, // don't create session until something stored
-  secret: 'keyboard cat'
+  secret: process.env.SESSION_SECRET || crypto.randomBytes(32).toString('hex')
 }));
 
+if (!process.env.SESSION_SECRET) {
+  console.warn('Warning: SESSION_SECRET environment variable not set. Using randomly generated secret.');
+}
+
 app.get('/', function(req, res){
-  var body = '';
-  if (req.session.views) {
     ++req.session.views;
   } else {
     req.session.views = 1;
