@@ -22,11 +22,12 @@ app.use(express.urlencoded())
 app.use(session({
   resave: false, // don't save session if unmodified
   saveUninitialized: false, // don't create session until something stored
-  secret: 'shhhh, very secret'
+  secret: process.env.SESSION_SECRET || (() => {
+    throw new Error('SESSION_SECRET environment variable must be set');
+  })()
 }));
 
 // Session-persisted message middleware
-
 app.use(function(req, res, next){
   var err = req.session.error;
   var msg = req.session.success;
