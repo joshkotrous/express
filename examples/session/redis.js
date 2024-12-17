@@ -20,7 +20,11 @@ app.use(logger('dev'));
 app.use(session({
   resave: false, // don't save session if unmodified
   saveUninitialized: false, // don't create session until something stored
-  secret: 'keyboard cat',
+  secret: process.env.SESSION_SECRET || (() => {
+    console.error('ERROR: SESSION_SECRET environment variable is not set!');
+    console.error('Please set SESSION_SECRET to a secure random string.');
+    process.exit(1);
+  })(),
   store: new RedisStore
 }));
 
