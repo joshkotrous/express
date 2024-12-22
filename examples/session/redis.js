@@ -20,10 +20,13 @@ app.use(logger('dev'));
 app.use(session({
   resave: false, // don't save session if unmodified
   saveUninitialized: false, // don't create session until something stored
-  secret: 'keyboard cat',
+  secret: process.env.SESSION_SECRET || (function() {
+    console.error('WARNING: No SESSION_SECRET environment variable set.');
+    console.error('Please set SESSION_SECRET for production environments.');
+    process.exit(1);
+  })(),
   store: new RedisStore
 }));
-
 app.get('/', function(req, res){
   var body = '';
   if (req.session.views) {
