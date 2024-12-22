@@ -40,9 +40,13 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(session({
   resave: false, // don't save session if unmodified
   saveUninitialized: false, // don't create session until something stored
-  secret: 'some secret here'
+  secret: process.env.SESSION_SECRET || (() => {
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error('SESSION_SECRET environment variable must be set in production');
+    }
+    return require('crypto').randomBytes(32).toString('hex');
+  })()
 }));
-
 // parse request bodies (req.body)
 app.use(express.urlencoded({ extended: true }))
 
