@@ -1,22 +1,28 @@
 'use strict'
-
 // install redis first:
 // https://redis.io/
-
 // then:
 // $ npm install redis
 // $ redis-server
-
 var express = require('../..');
 var session = require('express-session');
-
+const crypto = require('crypto');
 var app = express();
-
-// Populates req.session
+// session support
 app.use(session({
   resave: false, // don't save session if unmodified
   saveUninitialized: false, // don't create session until something stored
-  secret: 'keyboard cat'
+  secret: process.env.SESSION_SECRET || (() => {
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error('SESSION_SECRET environment variable must be set in production');
+    }
+    console.warn('WARNING: Using default session secret. This is insecure in production.');
+    return crypto.randomBytes(32).toString('hex');
+  })()
+}));
+app.get('/', function(req, res){
+  var body = '';
+  if (req.session.views) {
 }));
 
 app.get('/', function(req, res){
