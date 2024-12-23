@@ -40,14 +40,21 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(session({
   resave: false, // don't save session if unmodified
   saveUninitialized: false, // don't create session until something stored
+  cookie: {
+    secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
+    httpOnly: true, // Mitigate XSS
+    sameSite: 'strict', // CSRF protection
+    maxAge: 1000 * 60 * 60 * 24 // 24 hours
+  },
   secret: process.env.SESSION_SECRET || (() => {
     if (process.env.NODE_ENV === 'production') {
       throw new Error('SESSION_SECRET environment variable must be set in production');
     }
     return require('crypto').randomBytes(32).toString('hex');
-  })()
+  })(),
+  name: '__Host-sid', // Cookie name prefix for additional security in modern browsers
+  proxy: process.env.NODE_ENV === 'production' // Trust first proxy in production
 }));
-// parse request bodies (req.body)
 app.use(express.urlencoded({ extended: true }))
 
 // allow overriding methods in query (?_method=put)
