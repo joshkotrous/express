@@ -1,5 +1,7 @@
 'use strict'
 
+const crypto = require('crypto');
+
 /**
  * Module dependencies.
  */
@@ -40,14 +42,13 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(session({
   resave: false, // don't save session if unmodified
   saveUninitialized: false, // don't create session until something stored
-  secret: 'some secret here'
+app.use(session({
+  resave: false,
+  saveUninitialized: false, // don't create session until something stored
+  secret: process.env.SESSION_SECRET || crypto.randomBytes(32).toString('hex')
 }));
 
 // parse request bodies (req.body)
-app.use(express.urlencoded({ extended: true }))
-
-// allow overriding methods in query (?_method=put)
-app.use(methodOverride('_method'));
 
 // expose the "messages" local variable when views are rendered
 app.use(function(req, res, next){
