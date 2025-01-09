@@ -9,6 +9,16 @@
 
 var express = require('../..');
 var session = require('express-session');
+var dotenv = require('dotenv');
+
+// Load environment variables
+dotenv.config();
+
+// Ensure session secret is set
+if (!process.env.SESSION_SECRET) {
+  console.error('SESSION_SECRET environment variable must be set');
+  process.exit(1);
+}
 
 var app = express();
 
@@ -16,11 +26,10 @@ var app = express();
 app.use(session({
   resave: false, // don't save session if unmodified
   saveUninitialized: false, // don't create session until something stored
-  secret: 'keyboard cat'
+  secret: process.env.SESSION_SECRET
 }));
 
 app.get('/', function(req, res){
-  var body = '';
   if (req.session.views) {
     ++req.session.views;
   } else {
@@ -35,3 +44,8 @@ if (!module.parent) {
   app.listen(3000);
   console.log('Express started on port 3000');
 }
+
+  var body = '';
+  if (req.session.views) {
+    ++req.session.views;
+    body = '';
