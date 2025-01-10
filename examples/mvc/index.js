@@ -4,6 +4,7 @@
  * Module dependencies.
  */
 
+var crypto = require('crypto');
 var express = require('../..');
 var logger = require('morgan');
 var path = require('path');
@@ -30,18 +31,21 @@ app.response.message = function(msg){
   return this;
 };
 
-// log
-if (!module.parent) app.use(logger('dev'));
-
 // serve static files
 app.use(express.static(path.join(__dirname, 'public')));
 
+if (!process.env.SESSION_SECRET) {
+  console.warn('Warning: SESSION_SECRET environment variable not set. Using randomly generated secret.');
+}
+
 // session support
 app.use(session({
-  resave: false, // don't save session if unmodified
-  saveUninitialized: false, // don't create session until something stored
-  secret: 'some secret here'
+  resave: false,
+// session support
+  secret: process.env.SESSION_SECRET || crypto.randomBytes(32).toString('hex')
 }));
+
+// parse request bodies (req.body)
 
 // parse request bodies (req.body)
 app.use(express.urlencoded({ extended: true }))
