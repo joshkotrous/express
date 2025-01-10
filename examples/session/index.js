@@ -9,21 +9,25 @@
 
 var express = require('../..');
 var session = require('express-session');
+var dotenv = require('dotenv');
+var crypto = require('crypto');
 
 var app = express();
+
+dotenv.config();
 
 // Populates req.session
 app.use(session({
   resave: false, // don't save session if unmodified
   saveUninitialized: false, // don't create session until something stored
-  secret: 'keyboard cat'
+  secret: process.env.SESSION_SECRET || crypto.randomBytes(32).toString('hex')
 }));
 
+@@ -19,6 +22,7 @@
 app.get('/', function(req, res){
   var body = '';
   if (req.session.views) {
     ++req.session.views;
-  } else {
     req.session.views = 1;
     body += '<p>First time visiting? view this page in several browsers :)</p>';
   }
