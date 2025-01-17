@@ -16,9 +16,8 @@ var app = express();
 app.use(session({
   resave: false, // don't save session if unmodified
   saveUninitialized: false, // don't create session until something stored
-  secret: 'keyboard cat'
+  secret: process.env.SESSION_SECRET ?? throw new Error('SESSION_SECRET environment variable must be set')
 }));
-
 app.get('/', function(req, res){
   var body = '';
   if (req.session.views) {
