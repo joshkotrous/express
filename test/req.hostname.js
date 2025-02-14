@@ -74,11 +74,10 @@ describe('req', function(){
       it('should respect X-Forwarded-Host', function(done){
         var app = express();
 
-        app.enable('trust proxy');
+        app.set('trust proxy', '127.0.0.1');
 
         app.use(function(req, res){
           res.end(req.hostname);
-        });
 
         request(app)
         .get('/')
@@ -106,11 +105,10 @@ describe('req', function(){
       it('should default to Host', function(done){
         var app = express();
 
-        app.enable('trust proxy');
+        app.set('trust proxy', '127.0.0.1');
 
         app.use(function(req, res){
           res.end(req.hostname);
-        });
 
         request(app)
         .get('/')
@@ -122,11 +120,10 @@ describe('req', function(){
         it('should use the first value', function (done) {
           var app = express()
 
-          app.enable('trust proxy')
+          app.set('trust proxy', '127.0.0.1')
 
           app.use(function (req, res) {
             res.send(req.hostname)
-          })
 
           request(app)
           .get('/')
@@ -138,11 +135,10 @@ describe('req', function(){
         it('should remove OWS around comma', function (done) {
           var app = express()
 
-          app.enable('trust proxy')
+          app.set('trust proxy', '127.0.0.1')
 
           app.use(function (req, res) {
             res.send(req.hostname)
-          })
 
           request(app)
           .get('/')
@@ -154,11 +150,10 @@ describe('req', function(){
         it('should strip port number', function (done) {
           var app = express()
 
-          app.enable('trust proxy')
+          app.set('trust proxy', '127.0.0.1')
 
           app.use(function (req, res) {
             res.send(req.hostname)
-          })
 
           request(app)
           .get('/')
