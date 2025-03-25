@@ -21,13 +21,18 @@ app.use(express.urlencoded());
 app.use(session({
   resave: false, // don't save session if unmodified
   saveUninitialized: false, // don't create session until something stored
-  secret: 'shhhh, very secret',
+  secret: process.env.SESSION_SECRET || 'dev-secret-dont-use-in-production',
   cookie: {
     httpOnly: true,
     secure: true,
     sameSite: 'strict'
   }
 }));
+
+// Warning if SESSION_SECRET is not set
+if (!process.env.SESSION_SECRET) {
+  console.warn('WARNING: SESSION_SECRET environment variable not set! Using insecure default secret. This should never be used in production.');
+}
 
 // Session-persisted message middleware
 app.use(function(req, res, next){
