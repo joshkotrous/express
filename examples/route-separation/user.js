@@ -12,7 +12,15 @@ exports.list = function(req, res){
 };
 
 exports.load = function(req, res, next){
-  var id = req.params.id;
+  var id = parseInt(req.params.id, 10);
+  // Check if id is a valid array index: a non-negative integer within array bounds
+  if (isNaN(id) || id < 0 || id >= users.length) {
+    var err = new Error('cannot find user ' + req.params.id);
+    err.status = 404;
+    next(err);
+    return;
+  }
+  
   req.user = users[id];
   if (req.user) {
     next();
