@@ -1,47 +1,25 @@
 var fs = require('fs');
-var path = require('path'); // Add path module for path sanitization
 
 var variableRegExp = /\$([0-9a-zA-Z\.]+)/g;
 
 module.exports = function renderFile(fileName, options, callback) {
-  // Input validation
-  if (typeof fileName !== 'string') {
-    return callback(new Error('fileName must be a string'));
-  }
-  
-  try {
-    // Get the base directory (current working directory in this case)
-    var baseDir = process.cwd();
-    
-    // Normalize the path to remove any '..' sequences and resolve it to an absolute path
-    var normalizedPath = path.normalize(path.resolve(baseDir, fileName));
-    
-    // Security check: ensure the normalized path is within the base directory
-    if (!normalizedPath.startsWith(baseDir)) {
-      return callback(new Error('Access denied: Path is outside the allowed directory'));
-    }
-    
-    function onReadFile(err, str) {
-      if (err) {
-        callback(err);
-        return;
-      }
-
-      try {
-        str = str.replace(variableRegExp, generateVariableLookup(options));
-      } catch (e) {
-        err = e;
-        err.name = 'RenderError'
-      }
-
-      callback(err, str);
+  function onReadFile(err, str) {
+    if (err) {
+      callback(err);
+      return;
     }
 
-    // Use the validated and normalized path
-    fs.readFile(normalizedPath, 'utf8', onReadFile);
-  } catch (error) {
-    callback(error);
+    try {
+      str = str.replace(variableRegExp, generateVariableLookup(options));
+    } catch (e) {
+      err = e;
+      err.name = 'RenderError'
+    }
+
+    callback(err, str);
   }
+
+  fs.readFile(fileName, 'utf8', onReadFile);
 };
 
 function generateVariableLookup(data) {
@@ -50,7 +28,17 @@ function generateVariableLookup(data) {
     var value = data;
 
     for (var i = 0; i < parts.length; i++) {
-      value = value[parts[i]];
+      // Prevent prototype pollution by blocking dangerous properties
+      if (parts[i] === '__proto__' || parts[i] === 'constructor' || parts[i] === 'prototype') {
+        return undefined;
+      }
+      
+      // Ensure the property exists on the object itself, not on its prototype chain
+      if (value && typeof value === 'object' && Object.prototype.hasOwnProperty.call(value, parts[i])) {
+        value = value[parts[i]];
+      } else {
+        return undefined;
+      }
     }
 
     return value;
