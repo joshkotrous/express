@@ -4,9 +4,9 @@ var express = require('../../');
 var app = module.exports = express();
 var users = require('./db');
 
-// Function to escape HTML special characters to prevent XSS
-function escapeHtml(text) {
-  return String(text)
+// HTML escape function to prevent XSS
+function escapeHtml(unsafe) {
+  return unsafe
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
