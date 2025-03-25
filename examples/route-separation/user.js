@@ -13,7 +13,8 @@ exports.list = function(req, res){
 
 exports.load = function(req, res, next){
   var id = parseInt(req.params.id, 10);
-  // Check if id is a valid array index: a non-negative integer within array bounds
+  
+  // Validate id is a valid non-negative integer within array bounds
   if (isNaN(id) || id < 0 || id >= users.length) {
     var err = new Error('cannot find user ' + req.params.id);
     err.status = 404;
@@ -22,13 +23,7 @@ exports.load = function(req, res, next){
   }
   
   req.user = users[id];
-  if (req.user) {
-    next();
-  } else {
-    var err = new Error('cannot find user ' + id);
-    err.status = 404;
-    next(err);
-  }
+  next();
 };
 
 exports.view = function(req, res){
