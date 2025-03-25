@@ -36,14 +36,18 @@ if (!module.parent) app.use(logger('dev'));
 // serve static files
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Get session secret from environment variable or use a development fallback
+var sessionSecret = process.env.SESSION_SECRET;
+if (!sessionSecret && process.env.NODE_ENV === 'production') {
+  console.warn('WARNING: No SESSION_SECRET environment variable set in production. This is insecure!');
+  console.warn('Set a strong SESSION_SECRET environment variable for production use.');
+}
+
 // session support
 app.use(session({
   resave: false, // don't save session if unmodified
   saveUninitialized: false, // don't create session until something stored
-  secret: 'some secret here',
-  cookie: {
-    domain: 'localhost' // Set appropriate domain in production
-  }
+  secret: sessionSecret || 'dev-secret-for-testing-only'
 }));
 
 // parse request bodies (req.body)
