@@ -21,7 +21,13 @@ app.use(session({
   resave: false, // don't save session if unmodified
   saveUninitialized: false, // don't create session until something stored
   secret: 'keyboard cat',
-  store: new RedisStore
+  store: new RedisStore,
+  cookie: {
+    // In a production environment, set this to your application's domain
+    // e.g., domain: 'example.com'
+    // This helps prevent cross-site request forgery and other attacks
+    domain: process.env.DOMAIN || 'localhost'
+  }
 }));
 
 app.get('/', function(req, res){
