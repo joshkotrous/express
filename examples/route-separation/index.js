@@ -31,6 +31,23 @@ app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }))
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Parameter validation
+app.param('id', function(req, res, next, id) {
+  // Validate id parameter (alphanumeric characters and hyphens only)
+  if (!/^[0-9a-zA-Z-]+$/.test(id)) {
+    return res.status(400).send('Invalid user ID format');
+  }
+  next();
+});
+
+app.param('op', function(req, res, next, op) {
+  // Restrict operations to valid values only
+  if (!['view', 'edit'].includes(op)) {
+    return res.status(400).send('Invalid operation');
+  }
+  next();
+});
+
 // General
 
 app.get('/', site.index);
