@@ -28,6 +28,34 @@ app.map = function(a, route){
   }
 };
 
+// Authentication and authorization wrapper
+function secureHandler(handler, requiresAuth = true, requiresUserOwnership = false) {
+  return function(req, res) {
+    // Check for authentication if required
+    if (requiresAuth) {
+      const authHeader = req.get('Authorization');
+      if (!authHeader) {
+        return res.status(401).send('Authentication required');
+      }
+      
+      // Mock user for demonstration
+      req.user = { 
+        id: 'user-id', 
+        role: authHeader.includes('admin') ? 'admin' : 'user' 
+      };
+      
+      // Check authorization if required
+      if (requiresUserOwnership && req.params.uid && 
+          req.user.role !== 'admin' && req.user.id !== req.params.uid) {
+        return res.status(403).send('Unauthorized for this operation');
+      }
+    }
+    
+    // Call the original handler
+    handler(req, res);
+  };
+}
+
 var users = {
   list: function(req, res){
     res.send('user list');
@@ -52,16 +80,28 @@ var pets = {
   }
 };
 
+// Secure the handlers
+var secureUsers = {
+  list: secureHandler(users.list, false), // Public endpoint, no auth needed
+  get: secureHandler(users.get, true, true), // Requires auth and ownership
+  delete: secureHandler(users.delete, true, true) // Requires auth and ownership
+};
+
+var securePets = {
+  list: secureHandler(pets.list, true, true), // Requires auth and ownership
+  delete: secureHandler(pets.delete, true, true) // Requires auth and ownership
+};
+
 app.map({
   '/users': {
-    get: users.list,
-    delete: users.delete,
+    get: secureUsers.list,
+    delete: secureUsers.delete,
     '/:uid': {
-      get: users.get,
+      get: secureUsers.get,
       '/pets': {
-        get: pets.list,
+        get: securePets.list,
         '/:pid': {
-          delete: pets.delete
+          delete: securePets.delete
         }
       }
     }
