@@ -16,7 +16,13 @@ var app = express();
 app.use(session({
   resave: false, // don't save session if unmodified
   saveUninitialized: false, // don't create session until something stored
-  secret: 'keyboard cat'
+  secret: 'keyboard cat',
+  cookie: {
+    // Domain configuration for session cookies
+    // In production, this should be set to your application's domain to enhance security
+    // For example: domain: '.example.com'
+    domain: process.env.SESSION_COOKIE_DOMAIN
+  }
 }));
 
 app.get('/', function(req, res){
