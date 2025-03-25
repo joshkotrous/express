@@ -24,7 +24,29 @@ app.get('/', function(req, res){
 // /files/* is accessed via req.params[0]
 // but here we name it :file
 app.get('/files/*file', function (req, res, next) {
-  res.download(req.params.file.join('/'), { root: FILES_DIR }, function (err) {
+  // Ensure req.params.file is an array
+  if (!Array.isArray(req.params.file)) {
+    res.statusCode = 400; // Bad Request
+    return res.send('Invalid file path');
+  }
+
+  // Join the path segments
+  var requestedFilePath = req.params.file.join('/');
+  
+  // Resolve the absolute path
+  var fullPath = path.resolve(FILES_DIR, requestedFilePath);
+  
+  // Check if the resolved path is still within FILES_DIR
+  var relativePath = path.relative(FILES_DIR, fullPath);
+  
+  // If relativePath starts with '..' or is absolute, it's outside FILES_DIR
+  if (relativePath === '..' || relativePath.startsWith('../') || path.isAbsolute(relativePath)) {
+    res.statusCode = 403; // Forbidden
+    return res.send('Access to the requested file is forbidden');
+  }
+  
+  // Proceed with download if path is safe
+  res.download(requestedFilePath, { root: FILES_DIR }, function (err) {
     if (!err) return; // file sent
     if (err.status !== 404) return next(err); // non-404 error
     // file for download not found
