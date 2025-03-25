@@ -34,12 +34,25 @@ app.use(function(req, res, next){
 });
 
 /**
+ * HTML-encode a string to prevent XSS.
+ */
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+/**
  * List helper.
  */
 
 function list(ids) {
   return '<ul>' + ids.map(function(id){
-    return '<li>' + id + '</li>';
+    return '<li>' + escapeHtml(id) + '</li>';
   }).join('') + '</ul>';
 }
 
