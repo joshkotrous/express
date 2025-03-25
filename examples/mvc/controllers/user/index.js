@@ -11,6 +11,15 @@ exports.engine = 'hbs';
 exports.before = function(req, res, next){
   var id = req.params.user_id;
   if (!id) return next();
+  
+  // Sanitize the id
+  id = String(id).trim();
+  
+  // Validate that id contains only safe characters
+  if (!/^[a-zA-Z0-9_-]+$/.test(id)) {
+    return next('route');
+  }
+  
   // pretend to query a database...
   process.nextTick(function(){
     req.user = db.users[id];
