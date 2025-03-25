@@ -1,4 +1,7 @@
 <!DOCTYPE html>
+<!-- SECURITY NOTE: All user-supplied data (e.g., user.name) is output using Handlebars' 
+     default double-mustache syntax ({{ }}), which escapes HTML by default. 
+     For XSS prevention, DO NOT change to triple-mustache ({{{ }}}) for any user-supplied data. -->
 <html>
 <head>
   <meta charset="utf-8">
