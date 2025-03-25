@@ -5,10 +5,20 @@ var express = require('../')
   , fs = require('fs');
 var path = require('path')
 
+function escapeHtml(str) {
+  if (typeof str !== 'string') return '';
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 function render(path, options, fn) {
   fs.readFile(path, 'utf8', function(err, str){
     if (err) return fn(err);
-    str = str.replace('{{user.name}}', options.user.name);
+    str = str.replace('{{user.name}}', escapeHtml(options.user.name));
     fn(null, str);
   });
 }
