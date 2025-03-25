@@ -18,10 +18,19 @@ app.set('view engine', 'ejs');
 // middleware
 
 app.use(express.urlencoded());
+
+// Get session secret from environment variable or use a default for development
+const sessionSecret = process.env.SESSION_SECRET || 'shhhh, very secret';
+
+// If using the default, log a warning in non-test environments
+if (sessionSecret === 'shhhh, very secret' && process.env.NODE_ENV !== 'test') {
+  console.warn('Warning: Using default session secret. This is insecure and should only be used in development.');
+}
+
 app.use(session({
   resave: false, // don't save session if unmodified
   saveUninitialized: false, // don't create session until something stored
-  secret: 'shhhh, very secret',
+  secret: sessionSecret,
   cookie: {
     httpOnly: true,
     secure: true,
