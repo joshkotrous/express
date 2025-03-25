@@ -34,12 +34,28 @@ app.use(function(req, res, next){
 });
 
 /**
+ * Helper function to escape HTML entities.
+ */
+
+function escapeHtml(unsafe) {
+  if (typeof unsafe !== 'string') {
+    return '';
+  }
+  return unsafe
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+/**
  * List helper.
  */
 
 function list(ids) {
   return '<ul>' + ids.map(function(id){
-    return '<li>' + id + '</li>';
+    return '<li>' + escapeHtml(id) + '</li>';
   }).join('') + '</ul>';
 }
 
