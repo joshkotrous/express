@@ -40,17 +40,47 @@ var users = [
 
 var User = {
   index: function(req, res){
+    // TODO: In a production application, authorization checks should be implemented here
+    // to ensure the requesting user has permission to access this data
     res.send(users);
   },
   show: function(req, res){
-    res.send(users[req.params.id] || { error: 'Cannot find user' });
+    // Parse and validate the ID parameter
+    const id = parseInt(req.params.id, 10);
+    
+    // Check if the ID is valid
+    if (isNaN(id) || id < 0) {
+      return res.send({ error: 'Cannot find user' });
+    }
+    
+    // TODO: In a production application, authorization checks should be implemented here
+    // to ensure the requesting user has permission to access this data
+    
+    // Use the original pattern to handle out-of-bounds IDs
+    res.send(users[id] || { error: 'Cannot find user' });
   },
   destroy: function(req, res, id){
+    // Check if the ID is valid
+    if (isNaN(id) || id < 0) {
+      return res.send('Cannot find user');
+    }
+    
+    // TODO: In a production application, authorization checks should be implemented here
+    // to ensure the requesting user has permission to delete this user
+    
     var destroyed = id in users;
     delete users[id];
     res.send(destroyed ? 'destroyed' : 'Cannot find user');
   },
   range: function(req, res, a, b, format){
+    // Validate range parameters
+    if (isNaN(a) || isNaN(b) || a < 0 || b < 0) {
+      return res.send({ error: 'Invalid range parameters' });
+    }
+    
+    // TODO: In a production application, authorization checks should be implemented here
+    // to ensure the requesting user has permission to access this data
+    
     var range = users.slice(a, b + 1);
     switch (format) {
       case 'json':
