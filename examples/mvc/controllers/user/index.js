@@ -35,7 +35,35 @@ exports.show = function(req, res, next){
 
 exports.update = function(req, res, next){
   var body = req.body;
-  req.user.name = body.user.name;
+  
+  // Validate that body.user exists
+  if (!body.user) {
+    res.message('Invalid input: Missing user data');
+    return res.redirect('/user/' + req.user.id);
+  }
+  
+  // Validate that body.user.name is a string
+  if (typeof body.user.name !== 'string') {
+    res.message('Invalid input: Name must be a string');
+    return res.redirect('/user/' + req.user.id);
+  }
+  
+  // Trim whitespace
+  const trimmedName = body.user.name.trim();
+  
+  // Validate name is not empty and has a reasonable length
+  if (trimmedName === '') {
+    res.message('Invalid input: Name cannot be empty');
+    return res.redirect('/user/' + req.user.id);
+  }
+  
+  if (trimmedName.length > 100) {
+    res.message('Invalid input: Name must be less than 100 characters');
+    return res.redirect('/user/' + req.user.id);
+  }
+  
+  // Store the sanitized name
+  req.user.name = trimmedName;
   res.message('Information updated!');
   res.redirect('/user/' + req.user.id);
 };
