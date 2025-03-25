@@ -5,9 +5,12 @@ var express = require('../')
   , fs = require('fs');
 var path = require('path')
 
-function escapeHtml(str) {
-  if (typeof str !== 'string') return '';
-  return str
+// Add sanitization function to prevent output integrity attacks
+function sanitizeHTML(text) {
+  if (text === undefined || text === null) {
+    return '';
+  }
+  return String(text)
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
@@ -18,7 +21,8 @@ function escapeHtml(str) {
 function render(path, options, fn) {
   fs.readFile(path, 'utf8', function(err, str){
     if (err) return fn(err);
-    str = str.replace('{{user.name}}', escapeHtml(options.user.name));
+    // Sanitize user input before placing it in the template
+    str = str.replace('{{user.name}}', sanitizeHTML(options.user.name));
     fn(null, str);
   });
 }
