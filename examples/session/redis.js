@@ -16,18 +16,17 @@ var app = express();
 
 app.use(logger('dev'));
 
+// Check if SESSION_SECRET is set
+if (!process.env.SESSION_SECRET) {
+  console.warn('WARNING: SESSION_SECRET is not set. Using a default secret is insecure for production environments.');
+}
+
 // Populates req.session
 app.use(session({
   resave: false, // don't save session if unmodified
   saveUninitialized: false, // don't create session until something stored
-  secret: 'keyboard cat',
-  store: new RedisStore,
-  cookie: {
-    // Security best practice: Set the domain to restrict cookie access to your domain
-    domain: 'localhost', // Set this to your application's domain in production
-    httpOnly: true, // Prevents client-side JavaScript from accessing cookies
-    sameSite: 'lax' // Provides additional CSRF protection
-  }
+  secret: process.env.SESSION_SECRET || 'keyboard cat', // IMPORTANT: Set SESSION_SECRET in production
+  store: new RedisStore
 }));
 
 app.get('/', function(req, res){
