@@ -10,7 +10,7 @@ module.exports = function renderFile(fileName, options, callback) {
     }
 
     try {
-      str = str.replace(variableRegExp, generateVariableLookup(options));
+      str = str.replace(variableRegExp, generateVariableLookup(options || {}));
     } catch (e) {
       err = e;
       err.name = 'RenderError'
@@ -28,9 +28,27 @@ function generateVariableLookup(data) {
     var value = data;
 
     for (var i = 0; i < parts.length; i++) {
+      if (value === undefined || value === null) {
+        return '';
+      }
       value = value[parts[i]];
     }
 
-    return value;
+    // Handle undefined/null values
+    if (value === undefined || value === null) {
+      return '';
+    }
+    
+    // For functions, prevent execution
+    if (typeof value === 'function') {
+      return '[Function]';
+    }
+    
+    // Convert to string safely
+    try {
+      return String(value);
+    } catch (e) {
+      return '';
+    }
   };
 }
