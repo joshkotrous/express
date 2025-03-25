@@ -23,13 +23,20 @@ var users = [
 ];
 
 function loadUser(req, res, next) {
-  // You would fetch your user from the db
-  var user = users[req.params.id];
+  // Parse the id parameter as an integer
+  var id = parseInt(req.params.id, 10);
+  
+  // Validate that id is a valid non-negative integer and within bounds
+  if (isNaN(id) || id < 0 || id >= users.length) {
+    return next(new Error('Invalid user ID: ' + req.params.id));
+  }
+  
+  var user = users[id];
   if (user) {
     req.user = user;
     next();
   } else {
-    next(new Error('Failed to load user ' + req.params.id));
+    next(new Error('Failed to load user ' + id));
   }
 }
 
