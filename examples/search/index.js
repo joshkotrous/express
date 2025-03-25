@@ -31,12 +31,27 @@ db.sadd('ferret', 'jane');
 db.sadd('cat', 'manny');
 db.sadd('cat', 'luna');
 
+// Define allowlist of permitted search categories
+var ALLOWED_SEARCH_CATEGORIES = ['ferret', 'cat'];
+
 /**
  * GET search for :query.
  */
 
 app.get('/search/:query?', function(req, res, next){
   var query = req.params.query;
+  
+  // Handle empty query case
+  if (!query) {
+    return res.send([]);
+  }
+  
+  // Validate query against allowlist
+  if (ALLOWED_SEARCH_CATEGORIES.indexOf(query) === -1) {
+    return res.status(400).send('Invalid search category');
+  }
+  
+  // Now safely use the validated query
   db.smembers(query, function(err, vals){
     if (err) return next(err);
     res.send(vals);
