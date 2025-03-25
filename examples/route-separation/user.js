@@ -12,18 +12,15 @@ exports.list = function(req, res){
 };
 
 exports.load = function(req, res, next){
-  var id = parseInt(req.params.id, 10);
-  
-  // Validate id is a valid non-negative integer within array bounds
-  if (isNaN(id) || id < 0 || id >= users.length) {
-    var err = new Error('cannot find user ' + req.params.id);
+  var id = req.params.id;
+  req.user = users[id];
+  if (req.user) {
+    next();
+  } else {
+    var err = new Error('cannot find user ' + id);
     err.status = 404;
     next(err);
-    return;
   }
-  
-  req.user = users[id];
-  next();
 };
 
 exports.view = function(req, res){
@@ -41,10 +38,33 @@ exports.edit = function(req, res){
 };
 
 exports.update = function(req, res){
-  // Normally you would handle all kinds of
-  // validation and save back to the db
-  var user = req.body.user;
-  req.user.name = user.name;
-  req.user.email = user.email;
+  // Validate and sanitize user input
+  var user = req.body.user || {};
+  
+  // Validate name (non-empty string)
+  var name = user.name;
+  if (typeof name !== 'string' || name.trim() === '') {
+    var err = new Error('Invalid name provided');
+    err.status = 400;
+    return next(err);
+  }
+  
+  // Validate email (non-empty string with basic email format)
+  var email = user.email;
+  if (typeof email !== 'string' || email.trim() === '' || 
+      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    var err = new Error('Invalid email provided');
+    err.status = 400;
+    return next(err);
+  }
+  
+  // Sanitize inputs to prevent injection
+  name = name.trim();
+  email = email.trim();
+  
+  // Update user information
+  req.user.name = name;
+  req.user.email = email;
+  
   res.redirect(req.get('Referrer') || '/');
 };
