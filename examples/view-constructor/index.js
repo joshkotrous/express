@@ -10,12 +10,25 @@ var md = require('marked').parse;
 
 var app = module.exports = express();
 
+// HTML escaping function to prevent XSS
+function escapeHtml(unsafe) {
+  if (unsafe === undefined || unsafe === null) return '';
+  return String(unsafe)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
 // register .md as an engine in express view system
 app.engine('md', function(str, options, fn){
   try {
     var html = md(str);
     html = html.replace(/\{([^}]+)\}/g, function(_, name){
-      return options[name] || '';
+      // Escape HTML in option values to prevent XSS
+      var value = options[name];
+      return value !== undefined ? escapeHtml(value) : '';
     });
     fn(null, html);
   } catch(err) {
