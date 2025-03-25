@@ -20,7 +20,10 @@ app.use(logger('dev'));
 app.use(session({
   resave: false, // don't save session if unmodified
   saveUninitialized: false, // don't create session until something stored
-  secret: 'keyboard cat',
+  secret: process.env.SESSION_SECRET || (() => {
+    console.warn('WARNING: Using default session secret. This is insecure in production. Set SESSION_SECRET environment variable.');
+    return 'keyboard cat'; // Default for development only
+  })(),
   store: new RedisStore
 }));
 
