@@ -21,14 +21,20 @@ app.use(express.urlencoded());
 app.use(session({
   resave: false, // don't save session if unmodified
   saveUninitialized: false, // don't create session until something stored
-  secret: 'shhhh, very secret',
+  secret: process.env.SESSION_SECRET || (function() {
+    // In production, throw an error if SESSION_SECRET is not set
+    if (process.env.NODE_ENV === 'production') {
+      console.error('ERROR: SESSION_SECRET environment variable not set');
+      process.exit(1);
+    }
+    // For non-production, use a random string (still better than a hardcoded constant)
+    console.warn('WARNING: Using randomly generated session secret. This is not recommended for production.');
+    return require('crypto').randomBytes(32).toString('hex');
+  })(),
   cookie: {
     httpOnly: true,
     secure: true,
-    sameSite: 'strict',
-    // SECURITY: In production, set domain to your application's domain to restrict cookie access
-    // For development, can be set via COOKIE_DOMAIN environment variable
-    domain: process.env.COOKIE_DOMAIN // Uses default behavior if not set
+    sameSite: 'strict'
   }
 }));
 
