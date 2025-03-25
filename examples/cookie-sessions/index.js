@@ -9,8 +9,19 @@ var express = require('../../');
 
 var app = module.exports = express();
 
+// Get session secret from environment variable
+// IMPORTANT: In production environments, always set the SESSION_SECRET 
+// environment variable with a strong random value
+const sessionSecret = process.env.SESSION_SECRET || 'EXAMPLE_SECRET_CHANGE_IN_PRODUCTION';
+
+// Display warning if using the default insecure secret
+if (!process.env.SESSION_SECRET) {
+  console.warn('WARNING: Using insecure default session secret.');
+  console.warn('For production use, set SESSION_SECRET environment variable with a strong random value.');
+}
+
 // add req.session cookie support
-app.use(cookieSession({ secret: 'manny is cool' }));
+app.use(cookieSession({ secret: sessionSecret }));
 
 // do something with the session
 app.get('/', function (req, res) {
