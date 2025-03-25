@@ -1,7 +1,10 @@
 <%- include('error_header') -%>
 <h2>Error: <%= error.message %></h2>
 <% if (settings['verbose errors']) { %>
-  <pre><%= error.stack %></pre>
+  <!-- Stack trace removed for security reasons. The display of stack traces can expose sensitive
+       information such as file paths, code structure, and internal logic, which might be
+       exploited in further attacks. For debugging, please check server logs. -->
+  <p>Additional error details are available in server logs.</p>
 <% } else { %>
   <p>An error occurred!</p>
 <% } %>
