@@ -93,7 +93,19 @@ app.use(function(err, req, res, next){
   // here and next(err) appropriately, or if
   // we possibly recovered from the error, simply next().
   res.status(err.status || 500);
-  res.render('500', { error: err });
+  
+  // Create a sanitized error object with only safe properties
+  var safeError = {
+    message: err.message,
+    status: err.status || 500
+  };
+  
+  // Only include stack trace if verbose errors are enabled
+  if (app.enabled('verbose errors')) {
+    safeError.stack = err.stack;
+  }
+  
+  res.render('500', { error: safeError });
 });
 
 /* istanbul ignore next */
