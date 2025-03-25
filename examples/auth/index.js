@@ -84,6 +84,80 @@ function restrict(req, res, next) {
   }
 }
 
+// Login attempt tracking
+const loginAttempts = {}; // Track by username
+const ipAttempts = {};    // Track by IP address
+const MAX_ATTEMPTS = 5;   // Max failed attempts
+const LOCKOUT_DURATION = 15 * 60 * 1000; // 15 minutes in milliseconds
+
+// Helper function to check login attempts
+function checkLoginAttempts(username, ip) {
+  const now = Date.now();
+  
+  // Clean up expired attempts
+  Object.keys(loginAttempts).forEach(user => {
+    if (loginAttempts[user].lockUntil && loginAttempts[user].lockUntil < now) {
+      delete loginAttempts[user];
+    }
+  });
+  
+  Object.keys(ipAttempts).forEach(address => {
+    if (ipAttempts[address].lockUntil && ipAttempts[address].lockUntil < now) {
+      delete ipAttempts[address];
+    }
+  });
+  
+  // Check username attempts
+  if (username && loginAttempts[username] && loginAttempts[username].lockUntil && loginAttempts[username].lockUntil > now) {
+    const remainingTime = Math.ceil((loginAttempts[username].lockUntil - now) / 60000);
+    return `Account is temporarily locked. Please try again in ${remainingTime} minute(s).`;
+  }
+  
+  // Check IP attempts
+  if (ip && ipAttempts[ip] && ipAttempts[ip].lockUntil && ipAttempts[ip].lockUntil > now) {
+    const remainingTime = Math.ceil((ipAttempts[ip].lockUntil - now) / 60000);
+    return `Too many login attempts. Please try again in ${remainingTime} minute(s).`;
+  }
+  
+  return null;
+}
+
+// Helper function to record failed attempts
+function recordFailedAttempt(username, ip) {
+  const now = Date.now();
+  
+  // Record username attempt
+  if (username) {
+    loginAttempts[username] = loginAttempts[username] || { count: 0 };
+    loginAttempts[username].count += 1;
+    
+    if (loginAttempts[username].count >= MAX_ATTEMPTS) {
+      loginAttempts[username].lockUntil = now + LOCKOUT_DURATION;
+    }
+  }
+  
+  // Record IP attempt
+  if (ip) {
+    ipAttempts[ip] = ipAttempts[ip] || { count: 0 };
+    ipAttempts[ip].count += 1;
+    
+    if (ipAttempts[ip].count >= MAX_ATTEMPTS) {
+      ipAttempts[ip].lockUntil = now + LOCKOUT_DURATION;
+    }
+  }
+}
+
+// Helper function to reset attempts after successful login
+function resetLoginAttempts(username, ip) {
+  if (username && loginAttempts[username]) {
+    delete loginAttempts[username];
+  }
+  
+  if (ip && ipAttempts[ip]) {
+    delete ipAttempts[ip];
+  }
+}
+
 app.get('/', function(req, res){
   res.redirect('/login');
 });
@@ -105,10 +179,24 @@ app.get('/login', function(req, res){
 });
 
 app.post('/login', function (req, res, next) {
-  if (!req.body) return res.sendStatus(400)
-  authenticate(req.body.username, req.body.password, function(err, user){
-    if (err) return next(err)
+  if (!req.body) return res.sendStatus(400);
+  
+  const username = req.body.username;
+  const ip = req.ip || req.connection.remoteAddress;
+  
+  // Check for too many login attempts
+  const lockoutMessage = checkLoginAttempts(username, ip);
+  if (lockoutMessage) {
+    req.session.error = lockoutMessage;
+    return res.redirect('/login');
+  }
+  
+  authenticate(username, req.body.password, function(err, user){
+    if (err) return next(err);
     if (user) {
+      // Successful login - reset attempts
+      resetLoginAttempts(username, ip);
+      
       // Regenerate session when signing in
       // to prevent fixation
       req.session.regenerate(function(){
@@ -122,6 +210,9 @@ app.post('/login', function (req, res, next) {
         res.redirect(req.get('Referrer') || '/');
       });
     } else {
+      // Failed login - record the attempt
+      recordFailedAttempt(username, ip);
+      
       req.session.error = 'Authentication failed, please check your '
         + ' username and password.'
         + ' (use "tj" and "foobar")';
