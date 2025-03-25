@@ -25,7 +25,8 @@ app.use(session({
   cookie: {
     httpOnly: true,
     secure: true,
-    sameSite: 'strict'
+    sameSite: 'strict',
+    domain: 'localhost' // In production, set this to your actual domain (e.g., '.yourdomain.com')
   }
 }));
 
