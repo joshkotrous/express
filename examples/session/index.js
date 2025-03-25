@@ -12,20 +12,17 @@ var session = require('express-session');
 
 var app = express();
 
-// SECURITY BEST PRACTICE: Use environment variables for session secrets
-// For production, set SESSION_SECRET environment variable to a strong random value
-// Example: export SESSION_SECRET=$(node -e "console.log(require('crypto').randomBytes(32).toString('hex'))")
+// Use environment variable for session secret or fallback with warning
 const sessionSecret = process.env.SESSION_SECRET;
-if (!sessionSecret && process.env.NODE_ENV === 'production') {
-  console.error('WARNING: SESSION_SECRET environment variable not set in production!');
-  console.error('This is a security risk. Please set a strong SESSION_SECRET.');
+if (!sessionSecret) {
+  console.warn('WARNING: No SESSION_SECRET environment variable set. Using default secret. This is not secure for production!');
 }
 
 // Populates req.session
 app.use(session({
   resave: false, // don't save session if unmodified
   saveUninitialized: false, // don't create session until something stored
-  secret: sessionSecret || 'keyboard cat' // Fallback for development only - DO NOT USE IN PRODUCTION
+  secret: sessionSecret || 'keyboard cat' // Use environment variable or fallback
 }));
 
 app.get('/', function(req, res){
