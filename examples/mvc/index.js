@@ -37,19 +37,13 @@ if (!module.parent) app.use(logger('dev'));
 app.use(express.static(path.join(__dirname, 'public')));
 
 // session support
-let sessionSecret = process.env.SESSION_SECRET;
-if (!sessionSecret) {
-  // In production, this will generate a different key on each restart
-  // which can cause session invalidation. It's better than a hard-coded key
-  // for security, but not ideal for usability.
-  console.warn('WARNING: SESSION_SECRET not set. Using a random secret will invalidate existing sessions when the server restarts.');
-  sessionSecret = require('crypto').randomBytes(64).toString('hex');
-}
-
 app.use(session({
   resave: false, // don't save session if unmodified
   saveUninitialized: false, // don't create session until something stored
-  secret: sessionSecret
+  secret: 'some secret here',
+  cookie: {
+    domain: 'localhost' // Set appropriate domain in production
+  }
 }));
 
 // parse request bodies (req.body)
