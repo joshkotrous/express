@@ -28,7 +28,17 @@ function generateVariableLookup(data) {
     var value = data;
 
     for (var i = 0; i < parts.length; i++) {
-      value = value[parts[i]];
+      if (value === null || value === undefined) {
+        return undefined;
+      }
+      
+      var prop = parts[i];
+      // Prevent prototype pollution by checking if property exists directly on the object
+      if (!Object.prototype.hasOwnProperty.call(value, prop)) {
+        return undefined;
+      }
+      
+      value = value[prop];
     }
 
     return value;
