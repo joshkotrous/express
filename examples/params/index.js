@@ -32,7 +32,18 @@ app.param(['to', 'from'], function(req, res, next, num, name){
 // Load user by id
 
 app.param('user', function(req, res, next, id){
-  req.user = users[id]
+  // Convert to integer
+  var userId = parseInt(id, 10);
+  
+  // Check if it's a valid number
+  if (isNaN(userId)) {
+    return next(createError(400, 'Invalid user ID - must be a number'));
+  }
+  
+  // Set the user (only if index is within bounds)
+  req.user = (userId >= 0 && userId < users.length) ? users[userId] : undefined;
+  
+  // Check if user exists (maintains original behavior)
   if (req.user) {
     next();
   } else {
