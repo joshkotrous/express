@@ -16,7 +16,7 @@ var app = express();
 app.use(session({
   resave: false, // don't save session if unmodified
   saveUninitialized: false, // don't create session until something stored
-  secret: 'keyboard cat'
+  secret: process.env.SESSION_SECRET || 'keyboard cat' // IMPORTANT: Set SESSION_SECRET environment variable in production
 }));
 
 app.get('/', function(req, res){
@@ -32,6 +32,9 @@ app.get('/', function(req, res){
 
 /* istanbul ignore next */
 if (!module.parent) {
+  if (!process.env.SESSION_SECRET) {
+    console.warn('Warning: SESSION_SECRET environment variable not set. Using default secret. This is insecure in production.');
+  }
   app.listen(3000);
   console.log('Express started on port 3000');
 }
