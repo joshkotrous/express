@@ -35,8 +35,23 @@ db.sadd('cat', 'luna');
  * GET search for :query.
  */
 
+// Define a whitelist of allowed search categories
+var allowedSearchCategories = ['ferret', 'cat'];
+
 app.get('/search/:query?', function(req, res, next){
   var query = req.params.query;
+  
+  // If query is not provided, return empty results
+  if (!query) {
+    return res.send([]);
+  }
+  
+  // Validate against whitelist
+  if (!allowedSearchCategories.includes(query)) {
+    return res.status(400).send('Invalid search category');
+  }
+  
+  // Proceed with validated query
   db.smembers(query, function(err, vals){
     if (err) return next(err);
     res.send(vals);
