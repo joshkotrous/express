@@ -21,31 +21,12 @@ module.exports = GithubView;
  */
 
 function GithubView(name, options){
-  if (!name || typeof name !== 'string') {
-    throw new Error('Invalid template name');
-  }
-  
   this.name = name;
   options = options || {};
   this.engine = options.engines[extname(name)];
-  
-  // Secure this.path construction
-  
-  // 1. Sanitize repository path (options.root)
-  const safeRoot = options.root ? 
-    String(options.root)
-      .replace(/\.\./g, '') // Remove potential directory traversal
-      .replace(/^\/+/, '')   // Remove leading slashes
-      .replace(/\/+$/, '')   // Remove trailing slashes
-    : '';
-  
-  // 2. Sanitize template name
-  const safeName = String(name)
-    .replace(/\.\./g, '')   // Remove potential directory traversal
-    .replace(/^\/+/, '');    // Remove leading slashes
-  
-  // 3. Construct safe path
-  this.path = '/' + safeRoot + '/master/' + safeName;
+  // "root" is the app.set('views') setting, however
+  // in your own implementation you could ignore this
+  this.path = '/' + options.root + '/master/' + name;
 }
 
 /**
@@ -61,12 +42,19 @@ GithubView.prototype.render = function(options, fn){
     method: 'GET'
   };
 
-  https.request(opts, function(res) {
+  var req = https.request(opts, function(res) {
     var buf = '';
     res.setEncoding('utf8');
     res.on('data', function(str){ buf += str });
     res.on('end', function(){
       self.engine(buf, options, fn);
     });
-  }).end();
+  });
+  
+  // Add error handling
+  req.on('error', function(err) {
+    fn(err);
+  });
+  
+  req.end();
 };
