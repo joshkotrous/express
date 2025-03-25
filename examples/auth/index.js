@@ -25,7 +25,10 @@ app.use(session({
   cookie: {
     httpOnly: true,
     secure: true,
-    sameSite: 'strict'
+    sameSite: 'strict',
+    // SECURITY: In production, set domain to your application's domain to restrict cookie access
+    // For development, can be set via COOKIE_DOMAIN environment variable
+    domain: process.env.COOKIE_DOMAIN // Uses default behavior if not set
   }
 }));
 
