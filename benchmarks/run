@@ -1,9 +1,18 @@
 #!/usr/bin/env bash
 
-echo
+# Validate that $3 is a positive integer
+if [ -z "$3" ]; then
+  echo "Error: Connection count parameter is required"
+  exit 1
+fi
 
-# Using proper quotes to prevent shell command injection
-MW="$1" node "$2" &
+if ! [[ "$3" =~ ^[0-9]+$ ]] || [ "$3" -eq 0 ]; then
+  echo "Error: Connection count ($3) must be a positive integer"
+  exit 1
+fi
+
+echo
+MW=$1 node $2 &
 pid=$!
 
 echo "  $3 connections"
@@ -12,9 +21,9 @@ sleep 2
 
 wrk 'http://localhost:3333/?foo[bar]=baz' \
   -d 3 \
-  -c "$3" \
+  -c $3 \
   -t 8 \
   | grep 'Requests/sec\|Latency' \
   | awk '{ print " " $2 }'
 
-kill "$pid"
+kill $pid
