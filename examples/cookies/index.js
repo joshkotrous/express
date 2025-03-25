@@ -12,25 +12,20 @@ var cookieParser = require('cookie-parser');
 // custom log format
 if (process.env.NODE_ENV !== 'test') app.use(logger(':method :url'))
 
-// Get cookie secret from environment variable or generate a secure random one as fallback
-const cookieSecret = process.env.COOKIE_SECRET || 
-  (function() {
-    // Only show warning in non-test environments
-    if (process.env.NODE_ENV !== 'test') {
-      console.warn('WARNING: No COOKIE_SECRET environment variable set. Using a random generated value. This is less secure for production use.');
-    }
-    // Generate random string as fallback
-    return require('crypto').randomBytes(32).toString('hex');
-  })();
-
 // parses request cookies, populating
 // req.cookies and req.signedCookies
 // when the secret is passed, used
 // for signing the cookies.
-app.use(cookieParser(cookieSecret));
+app.use(cookieParser('my secret here'));
 
 // parses x-www-form-urlencoded
 app.use(express.urlencoded())
+
+// Helper function to get a safe redirect URL
+function getSafeRedirectUrl(url) {
+  // Only allow relative URLs (starting with /)
+  return url && typeof url === 'string' && url.startsWith('/') ? url : '/';
+}
 
 app.get('/', function(req, res){
   if (req.cookies.remember) {
@@ -44,7 +39,7 @@ app.get('/', function(req, res){
 
 app.get('/forget', function(req, res){
   res.clearCookie('remember');
-  res.redirect(req.get('Referrer') || '/');
+  res.redirect(getSafeRedirectUrl(req.get('Referrer')));
 });
 
 app.post('/', function(req, res){
@@ -54,7 +49,7 @@ app.post('/', function(req, res){
     res.cookie('remember', 1, { maxAge: minute })
   }
 
-  res.redirect(req.get('Referrer') || '/');
+  res.redirect(getSafeRedirectUrl(req.get('Referrer')));
 });
 
 /* istanbul ignore next */
