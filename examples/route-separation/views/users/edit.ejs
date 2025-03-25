@@ -4,6 +4,9 @@
 
 <div id="user">
   <form action="?_method=put" method="post">
+    <!-- Add CSRF protection -->
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+    
     <p>
       Name:
       <input type="text" value="<%= user.name %>" name="user[name]" />
