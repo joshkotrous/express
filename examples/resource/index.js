@@ -15,12 +15,29 @@ app.resource = function(path, obj) {
   this.get(path + '/:a..:b{.:format}', function(req, res){
     var a = parseInt(req.params.a, 10);
     var b = parseInt(req.params.b, 10);
+    
+    // Validate that the parsed values are valid numbers
+    if (isNaN(a) || isNaN(b) || !isFinite(a) || !isFinite(b)) {
+      return res.status(400).send({ error: 'Invalid range parameters. Both a and b must be valid integers.' });
+    }
+    
+    // Validate that the indices are not negative
+    if (a < 0 || b < 0) {
+      return res.status(400).send({ error: 'Invalid range parameters. Both a and b must be non-negative integers.' });
+    }
+    
     var format = req.params.format;
     obj.range(req, res, a, b, format);
   });
   this.get(path + '/:id', obj.show);
   this.delete(path + '/:id', function(req, res){
     var id = parseInt(req.params.id, 10);
+    
+    // Validate that the parsed id is a valid number
+    if (isNaN(id) || !isFinite(id)) {
+      return res.status(400).send({ error: 'Invalid id parameter. Must be a valid integer.' });
+    }
+    
     obj.destroy(req, res, id);
   });
 };
@@ -43,7 +60,14 @@ var User = {
     res.send(users);
   },
   show: function(req, res){
-    res.send(users[req.params.id] || { error: 'Cannot find user' });
+    var id = parseInt(req.params.id, 10);
+    
+    // Validate that the parsed id is a valid number
+    if (isNaN(id) || !isFinite(id)) {
+      return res.send({ error: 'Invalid user id' });
+    }
+    
+    res.send(users[id] || { error: 'Cannot find user' });
   },
   destroy: function(req, res, id){
     var destroyed = id in users;
