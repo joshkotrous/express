@@ -26,7 +26,36 @@ if (!module.parent) {
   app.use(logger('dev'));
 }
 
-app.use(methodOverride('_method'));
+// Define allowed methods for override
+var allowedMethods = ['PUT', 'DELETE', 'PATCH'];
+
+// Replace simple methodOverride with a more restricted version
+app.use(methodOverride(function(req) {
+  // Only allow overriding from POST requests
+  if (req.method.toLowerCase() !== 'post') {
+    return;
+  }
+  
+  // Check for _method in query string
+  if (req.query && req.query._method) {
+    var method = req.query._method.toUpperCase();
+    if (allowedMethods.indexOf(method) !== -1) {
+      return method;
+    }
+  }
+  
+  // Check for X-HTTP-Method-Override header
+  if (req.headers['x-http-method-override']) {
+    var method = req.headers['x-http-method-override'].toUpperCase();
+    if (allowedMethods.indexOf(method) !== -1) {
+      return method;
+    }
+  }
+  
+  // No valid override found
+  return;
+}));
+
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }))
 app.use(express.static(path.join(__dirname, 'public')));
