@@ -2,12 +2,12 @@
 
 var users = require('./db');
 
-// Function to sanitize HTML to prevent XSS attacks
-function escapeHtml(text) {
-  if (text === undefined || text === null) {
+// Function to escape HTML special characters
+function escapeHTML(str) {
+  if (typeof str !== 'string') {
     return '';
   }
-  return String(text)
+  return str
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
@@ -17,7 +17,7 @@ function escapeHtml(text) {
 
 exports.html = function(req, res){
   res.send('<ul>' + users.map(function(user){
-    return '<li>' + escapeHtml(user.name) + '</li>';
+    return '<li>' + escapeHTML(user.name) + '</li>';
   }).join('') + '</ul>');
 };
 
