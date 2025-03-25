@@ -37,10 +37,20 @@ db.sadd('cat', 'luna');
 
 app.get('/search/:query?', function(req, res, next){
   var query = req.params.query;
-  db.smembers(query, function(err, vals){
-    if (err) return next(err);
-    res.send(vals);
-  });
+  // Define allowed keys based on the data we've populated
+  var allowedKeys = ['ferret', 'cat'];
+  
+  // Check if query is provided and is in the allowed list
+  if (query && allowedKeys.includes(query)) {
+    db.smembers(query, function(err, vals){
+      if (err) return next(err);
+      res.send(vals);
+    });
+  } else {
+    // Return an appropriate message for invalid or missing queries
+    var message = 'Please provide a valid search query. Available options: ' + allowedKeys.join(', ');
+    res.status(400).send(message);
+  }
 });
 
 /**
