@@ -19,7 +19,15 @@ if (!test) app.use(logger('dev'));
 
 function error(err, req, res, next) {
   // log it
-  if (!test) console.error(err.stack);
+  if (!test) {
+    if (app.get('env') === 'production') {
+      // In production, log only minimal error info
+      console.error('Server error:', err.message || 'Unknown error');
+    } else {
+      // In other non-test environments (dev, staging, etc.), log full stack
+      console.error(err.stack);
+    }
+  }
 
   // respond with 500 "Internal Server Error".
   res.status(500);
