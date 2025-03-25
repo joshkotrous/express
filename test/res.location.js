@@ -139,13 +139,31 @@ describe('res', function(){
     function createRedirectServerForDomain (domain) {
       var app = express();
       app.use(function (req, res) {
-        var host = url.parse(req.query.q, false, true).host;
-        // This is here to show a basic check one might do which
-        // would pass but then the location header would still be bad
-        if (host !== domain) {
+        var urlString = req.query.q || '';
+        
+        // Parse with url.parse as in the original
+        var parsedUrl = url.parse(urlString, false, true);
+        var host = parsedUrl.host || '';
+        
+        // Basic domain check
+        if (domain !== null && host !== domain) {
           res.status(400).end('Bad host: ' + host + ' !== ' + domain);
+          return;
         }
-        res.location(req.query.q).end();
+        
+        // Additional security check for unescaped @ symbols
+        if (domain !== null) {
+          var chars = urlString.split('');
+          for (var i = 0; i < chars.length; i++) {
+            if (chars[i] === '@' && (i === 0 || chars[i-1] !== '\\')) {
+              res.status(400).end('URLs with unescaped @ symbols are not allowed');
+              return;
+            }
+          }
+        }
+        
+        // If all checks pass, proceed with the redirect
+        res.location(urlString).end();
       });
       return app;
     }
