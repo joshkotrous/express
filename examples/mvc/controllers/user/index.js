@@ -35,7 +35,29 @@ exports.show = function(req, res, next){
 
 exports.update = function(req, res, next){
   var body = req.body;
-  req.user.name = body.user.name;
+  
+  // Validate input
+  if (!body.user || typeof body.user.name !== 'string') {
+    res.status(400).send('Invalid input: name must be a string');
+    return;
+  }
+  
+  // Sanitize input - trim whitespace and escape HTML
+  var sanitizedName = body.user.name.trim()
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+  
+  // Additional validation - check length constraints
+  if (sanitizedName.length < 1 || sanitizedName.length > 100) {
+    res.status(400).send('Invalid input: name must be between 1 and 100 characters');
+    return;
+  }
+  
+  // Update user with sanitized input
+  req.user.name = sanitizedName;
+  
   res.message('Information updated!');
   res.redirect('/user/' + req.user.id);
 };
