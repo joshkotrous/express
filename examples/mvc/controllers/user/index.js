@@ -6,6 +6,24 @@
 
 var db = require('../../db');
 
+// Simple function to sanitize input against XSS
+function sanitizeInput(input) {
+  // If input is not a string, return empty string
+  if (typeof input !== 'string') {
+    return '';
+  }
+  
+  // Remove or neutralize potentially harmful content
+  // This targets common XSS vectors while preserving most legitimate content
+  return input
+    // Remove script tags and their contents
+    .replace(/<script[\s\S]*?<\/script>/gi, '')
+    // Remove event handlers
+    .replace(/on\w+\s*=\s*["']?[^"']*["']?/gi, '')
+    // Neutralize javascript: URLs
+    .replace(/javascript:/gi, 'disabled-javascript:');
+}
+
 exports.engine = 'hbs';
 
 exports.before = function(req, res, next){
@@ -35,7 +53,15 @@ exports.show = function(req, res, next){
 
 exports.update = function(req, res, next){
   var body = req.body;
-  req.user.name = body.user.name;
-  res.message('Information updated!');
+  
+  // Make sure body.user exists to avoid potential undefined errors
+  if (body && body.user) {
+    // Sanitize the user input before storing it
+    req.user.name = sanitizeInput(body.user.name);
+    res.message('Information updated!');
+  } else {
+    res.message('Invalid input. Please try again.');
+  }
+  
   res.redirect('/user/' + req.user.id);
 };
