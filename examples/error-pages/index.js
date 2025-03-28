@@ -93,7 +93,16 @@ app.use(function(err, req, res, next){
   // here and next(err) appropriately, or if
   // we possibly recovered from the error, simply next().
   res.status(err.status || 500);
-  res.render('500', { error: err });
+  
+  // Only expose error details if verbose errors are enabled
+  const errorInfo = app.get('verbose errors') ? {
+    message: err.message,
+    status: err.status
+  } : {
+    message: 'Server Error'
+  };
+  
+  res.render('500', { error: errorInfo });
 });
 
 /* istanbul ignore next */
