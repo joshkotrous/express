@@ -21,12 +21,29 @@ module.exports = GithubView;
  */
 
 function GithubView(name, options){
+  if (!name || typeof name !== 'string') {
+    throw new Error('Template name must be a non-empty string');
+  }
+  
+  // Validate the name parameter with a whitelist approach
+  // Allow alphanumeric characters, underscores, hyphens, dots, and forward slashes
+  if (!/^[a-zA-Z0-9_\-\.\/]+$/.test(name) || name.indexOf('..') !== -1) {
+    throw new Error('Invalid template name');
+  }
+  
   this.name = name;
   options = options || {};
   this.engine = options.engines[extname(name)];
+  
+  // Sanitize the root option as well for completeness
+  var root = options.root || '';
+  if (!/^[a-zA-Z0-9_\-\.\/]+$/.test(root) || root.indexOf('..') !== -1) {
+    throw new Error('Invalid root path');
+  }
+  
   // "root" is the app.set('views') setting, however
   // in your own implementation you could ignore this
-  this.path = '/' + options.root + '/master/' + name;
+  this.path = '/' + root + '/master/' + name;
 }
 
 /**
