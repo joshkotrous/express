@@ -37,6 +37,16 @@ db.sadd('cat', 'luna');
 
 app.get('/search/:query?', function(req, res, next){
   var query = req.params.query;
+  var allowedSets = ['ferret', 'cat']; // Whitelist of allowed set names
+  
+  if (!query) {
+    return res.status(200).send([]); // Empty result if no query provided
+  }
+  
+  if (!allowedSets.includes(query)) {
+    return res.status(400).send('Invalid query parameter');
+  }
+  
   db.smembers(query, function(err, vals){
     if (err) return next(err);
     res.send(vals);
