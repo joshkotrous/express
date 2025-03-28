@@ -34,12 +34,24 @@ app.use(function(req, res, next){
 });
 
 /**
+ * HTML escaping function to prevent XSS.
+ */
+function escapeHtml(unsafe) {
+  return String(unsafe)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+/**
  * List helper.
  */
 
 function list(ids) {
   return '<ul>' + ids.map(function(id){
-    return '<li>' + id + '</li>';
+    return '<li>' + escapeHtml(id) + '</li>';
   }).join('') + '</ul>';
 }
 
