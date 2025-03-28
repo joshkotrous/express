@@ -36,7 +36,17 @@ var redirect = express();
 
 redirect.use(function(req, res){
   if (!module.parent) console.log(req.vhost);
-  res.redirect('http://example.com:3000/' + req.vhost[0]);
+  
+  // Sanitize the subdomain value to prevent open redirect
+  var subdomain = req.vhost[0];
+  
+  // Validate subdomain - only allow alphanumeric characters, hyphens, and underscores
+  if (subdomain && /^[a-zA-Z0-9-_]+$/.test(subdomain)) {
+    res.redirect('http://example.com:3000/' + subdomain);
+  } else {
+    // If validation fails, redirect to the root URL
+    res.redirect('http://example.com:3000/');
+  }
 });
 
 // Vhost app
