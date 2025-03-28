@@ -21,7 +21,9 @@ app.use(express.urlencoded());
 app.use(session({
   resave: false, // don't save session if unmodified
   saveUninitialized: false, // don't create session until something stored
-  secret: 'shhhh, very secret',
+  secret: process.env.SESSION_SECRET || ((process.env.NODE_ENV !== 'production') ? 
+    (console.warn('Warning: Using fallback session secret for development. This is not secure for production use.'), 'shhhh, very secret') : 
+    (() => { throw new Error('SESSION_SECRET environment variable must be set in production mode'); })()),
   cookie: {
     httpOnly: true,
     secure: true,
@@ -40,7 +42,7 @@ app.use(function(req, res, next){
   if (msg) res.locals.message = '<p class="msg success">' + msg + '</p>';
   next();
 });
-
+// dummy database
 // dummy database
 
 var users = {
@@ -57,7 +59,7 @@ hash({ password: 'foobar' }, function (err, pass, salt, hash) {
   users.tj.hash = hash;
 });
 
-
+// Authenticate using our plain-object database of doom!
 // Authenticate using our plain-object database of doom!
 
 function authenticate(name, pass, fn) {
