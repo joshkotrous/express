@@ -40,7 +40,12 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(session({
   resave: false, // don't save session if unmodified
   saveUninitialized: false, // don't create session until something stored
-  secret: 'some secret here'
+  secret: 'some secret here',
+  cookie: {
+    domain: process.env.SESSION_DOMAIN || null, // domain of the cookie, configurable via environment variable
+    httpOnly: true, // helps mitigate risk of client side script accessing the protected cookie
+    secure: process.env.NODE_ENV === 'production' // Only use secure cookies in production
+  }
 }));
 
 // parse request bodies (req.body)
@@ -81,8 +86,8 @@ app.use(function(err, req, res, next){
 
   // error page
   res.status(500).render('5xx');
-});
 
+  // error page
 // assume 404 since no middleware responded
 app.use(function(req, res, next){
   res.status(404).render('404', { url: req.originalUrl });
@@ -90,6 +95,9 @@ app.use(function(req, res, next){
 
 /* istanbul ignore next */
 if (!module.parent) {
+  app.listen(3000);
+  console.log('Express started on port 3000');
+}
   app.listen(3000);
   console.log('Express started on port 3000');
 }
