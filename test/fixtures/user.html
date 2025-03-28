@@ -1,1 +1,2 @@
-<p>{{user.name}}</p>
+<!-- Security: Explicitly escaping user.name to prevent XSS -->
+<p>{{user.name | escape}}</p>
