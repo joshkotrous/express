@@ -1,8 +1,9 @@
 <%- include('error_header') -%>
-<h2>Error: <%= error.message %></h2>
+<h2>Server Error</h2>
 <% if (settings['verbose errors']) { %>
+  <p>Error details: <%= error.message %></p>
   <pre><%= error.stack %></pre>
 <% } else { %>
-  <p>An error occurred!</p>
+  <p>An error occurred! Please try again later or contact support.</p>
 <% } %>
 <%- include('footer') -%>
