@@ -43,7 +43,12 @@ var User = {
     res.send(users);
   },
   show: function(req, res){
-    res.send(users[req.params.id] || { error: 'Cannot find user' });
+    var id = parseInt(req.params.id, 10);
+    if (isNaN(id) || id < 0 || id >= users.length) {
+      res.send({ error: 'Cannot find user' });
+    } else {
+      res.send(users[id]);
+    }
   },
   destroy: function(req, res, id){
     var destroyed = id in users;
