@@ -24,7 +24,22 @@ app.get('/', function(req, res){
 // /files/* is accessed via req.params[0]
 // but here we name it :file
 app.get('/files/*file', function (req, res, next) {
-  res.download(req.params.file.join('/'), { root: FILES_DIR }, function (err) {
+  // Extract the file path
+  let filePath;
+  try {
+    filePath = req.params.file.join('/'); // Use original method
+  } catch (e) {
+    filePath = req.params.file; // Fall back to direct access
+  }
+  
+  // Validate the path to prevent directory traversal
+  if (filePath.includes('..') || filePath.includes('\\')) {
+    res.status(403).send('Forbidden');
+    return;
+  }
+  
+  // Use the validated path
+  res.download(filePath, { root: FILES_DIR }, function (err) {
     if (!err) return; // file sent
     if (err.status !== 404) return next(err); // non-404 error
     // file for download not found
