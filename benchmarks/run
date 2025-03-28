@@ -1,16 +1,25 @@
 #!/usr/bin/env bash
 
 echo
-MW=$1 node $2 &
+MW="$1" node "$2" &
 pid=$!
 
-echo "  $3 connections"
+# Validate and limit the number of connections
+if [[ "$3" =~ ^[0-9]+$ ]] && [ "$3" -le 1000 ] && [ "$3" -gt 0 ]; then
+    CONNECTIONS=$3
+else
+    # Default to 10 connections if the input is invalid
+    CONNECTIONS=10
+    echo "  Warning: Invalid connection count '$3'. Using default value of $CONNECTIONS connections."
+fi
+
+echo "  $CONNECTIONS connections"
 
 sleep 2
 
 wrk 'http://localhost:3333/?foo[bar]=baz' \
   -d 3 \
-  -c $3 \
+  -c $CONNECTIONS \
   -t 8 \
   | grep 'Requests/sec\|Latency' \
   | awk '{ print " " $2 }'
