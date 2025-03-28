@@ -24,12 +24,28 @@ var users = [
 
 function loadUser(req, res, next) {
   // You would fetch your user from the db
-  var user = users[req.params.id];
+  var userId = parseInt(req.params.id, 10);
+  
+  // Validate user ID is a number
+  if (isNaN(userId)) {
+    next(new Error('Invalid user ID'));
+    return;
+  }
+  
+  // Find user by ID property
+  var user = null;
+  for (var i = 0; i < users.length; i++) {
+    if (users[i].id === userId) {
+      user = users[i];
+      break;
+    }
+  }
+  
   if (user) {
     req.user = user;
     next();
   } else {
-    next(new Error('Failed to load user ' + req.params.id));
+    next(new Error('User not found'));
   }
 }
 
