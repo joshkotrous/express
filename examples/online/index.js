@@ -34,12 +34,24 @@ app.use(function(req, res, next){
 });
 
 /**
+ * HTML Entity Encoder Helper.
+ */
+function encodeHTML(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+/**
  * List helper.
  */
 
 function list(ids) {
   return '<ul>' + ids.map(function(id){
-    return '<li>' + id + '</li>';
+    return '<li>' + encodeHTML(id) + '</li>';
   }).join('') + '</ul>';
 }
 
