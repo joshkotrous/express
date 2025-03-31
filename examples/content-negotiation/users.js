@@ -2,9 +2,19 @@
 
 var users = require('./db');
 
+// Function to escape HTML special characters
+function escapeHtml(unsafe) {
+  return unsafe
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
 exports.html = function(req, res){
   res.send('<ul>' + users.map(function(user){
-    return '<li>' + user.name + '</li>';
+    return '<li>' + escapeHtml(user.name) + '</li>';
   }).join('') + '</ul>');
 };
 
