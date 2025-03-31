@@ -43,14 +43,27 @@ var User = {
     res.send(users);
   },
   show: function(req, res){
-    res.send(users[req.params.id] || { error: 'Cannot find user' });
+    var id = parseInt(req.params.id, 10);
+    // Check if id is a valid array index
+    if (isNaN(id) || id < 0 || id >= users.length) {
+      return res.send({ error: 'Cannot find user' });
+    }
+    res.send(users[id]);
   },
   destroy: function(req, res, id){
+    // Check if id is a valid array index
+    if (isNaN(id) || id < 0 || id >= users.length) {
+      return res.send('Cannot find user');
+    }
     var destroyed = id in users;
     delete users[id];
     res.send(destroyed ? 'destroyed' : 'Cannot find user');
   },
   range: function(req, res, a, b, format){
+    // Validate inputs for array slicing
+    if (isNaN(a) || isNaN(b) || a < 0 || b < 0 || a >= users.length || b >= users.length) {
+      return res.send({ error: 'Invalid range' });
+    }
     var range = users.slice(a, b + 1);
     switch (format) {
       case 'json':
