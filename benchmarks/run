@@ -1,7 +1,25 @@
 #!/usr/bin/env bash
 
+# Validate inputs before using them
+if [ $# -ne 3 ]; then
+    echo "Usage: $0 <middleware> <node_script> <connections>"
+    exit 1
+fi
+
+# Validate $2 (Node script) - should be an existing file
+if [[ ! -f "$2" ]]; then
+    echo "Error: Second parameter must be an existing file"
+    exit 1
+fi
+
+# Validate $3 (connections) - should be a positive integer
+if [[ ! "$3" =~ ^[1-9][0-9]*$ ]]; then
+    echo "Error: Third parameter (connections) must be a positive integer"
+    exit 1
+fi
+
 echo
-MW=$1 node $2 &
+MW="$1" node "$2" &
 pid=$!
 
 echo "  $3 connections"
@@ -10,7 +28,7 @@ sleep 2
 
 wrk 'http://localhost:3333/?foo[bar]=baz' \
   -d 3 \
-  -c $3 \
+  -c "$3" \
   -t 8 \
   | grep 'Requests/sec\|Latency' \
   | awk '{ print " " $2 }'
