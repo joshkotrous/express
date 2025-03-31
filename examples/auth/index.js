@@ -8,6 +8,7 @@ var express = require('../..');
 var hash = require('pbkdf2-password')()
 var path = require('path');
 var session = require('express-session');
+var crypto = require('crypto');
 
 var app = module.exports = express();
 
@@ -21,7 +22,14 @@ app.use(express.urlencoded());
 app.use(session({
   resave: false, // don't save session if unmodified
   saveUninitialized: false, // don't create session until something stored
-  secret: 'shhhh, very secret',
+  secret: process.env.SESSION_SECRET || (function() {
+    if (process.env.NODE_ENV === 'production') {
+      console.error('ERROR: SESSION_SECRET environment variable must be set in production');
+      process.exit(1);
+    }
+    console.warn('Warning: Using a randomly generated session secret. This is only acceptable for development/testing.');
+    return crypto.randomBytes(32).toString('hex');
+  })(),
   cookie: {
     httpOnly: true,
     secure: true,
