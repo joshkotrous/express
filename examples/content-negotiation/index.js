@@ -4,13 +4,23 @@ var express = require('../../');
 var app = module.exports = express();
 var users = require('./db');
 
+// Simple HTML escaping function to prevent XSS
+function escapeHtml(text) {
+  return String(text)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
 // so either you can deal with different types of formatting
 // for expected response in index.js
 app.get('/', function(req, res){
   res.format({
     html: function(){
       res.send('<ul>' + users.map(function(user){
-        return '<li>' + user.name + '</li>';
+        return '<li>' + escapeHtml(user.name) + '</li>';
       }).join('') + '</ul>');
     },
 
