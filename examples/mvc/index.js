@@ -40,7 +40,12 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(session({
   resave: false, // don't save session if unmodified
   saveUninitialized: false, // don't create session until something stored
-  secret: 'some secret here'
+  secret: process.env.SESSION_SECRET || (function() {
+    if (!module.parent) {
+      console.warn('Warning: SESSION_SECRET environment variable not set, using a default secret. For production, set SESSION_SECRET to a secure random string.');
+    }
+    return 'development-secret-key';
+  })()
 }));
 
 // parse request bodies (req.body)
