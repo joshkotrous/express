@@ -1,10 +1,11 @@
-
 var express = require('..');
 var app = express();
 
 // number of middleware
 
-var n = parseInt(process.env.MW || '1', 10);
+const MAX_MIDDLEWARE = 100; // Set a reasonable maximum
+var raw = parseInt(process.env.MW || '1', 10);
+var n = (isNaN(raw) || raw <= 0 || raw > MAX_MIDDLEWARE) ? 1 : raw;
 console.log('  %s middleware', n);
 
 while (n--) {
