@@ -35,7 +35,22 @@ exports.show = function(req, res, next){
 
 exports.update = function(req, res, next){
   var body = req.body;
-  req.user.name = body.user.name;
+  
+  // Input validation
+  if (!body.user || !body.user.name || typeof body.user.name !== 'string') {
+    res.message('Invalid user data');
+    return res.redirect('back'); // Redirect back to the form
+  }
+  
+  // Sanitize the input - basic trimming and length restriction
+  var sanitizedName = body.user.name.trim();
+  if (sanitizedName.length > 100) {
+    sanitizedName = sanitizedName.substring(0, 100);
+  }
+  
+  // Update with sanitized value
+  req.user.name = sanitizedName;
+  
   res.message('Information updated!');
   res.redirect('/user/' + req.user.id);
 };
