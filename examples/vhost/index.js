@@ -16,6 +16,16 @@ edit /etc/hosts:
 127.0.0.1       example.com
 */
 
+// HTML escaping function to prevent XSS
+function escapeHtml(text) {
+  return String(text)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/\"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 // Main server app
 
 var main = express();
@@ -27,7 +37,7 @@ main.get('/', function(req, res){
 });
 
 main.get('/:sub', function(req, res){
-  res.send('requested ' + req.params.sub);
+  res.send('requested ' + escapeHtml(req.params.sub));
 });
 
 // Redirect app
@@ -36,7 +46,18 @@ var redirect = express();
 
 redirect.use(function(req, res){
   if (!module.parent) console.log(req.vhost);
-  res.redirect('http://example.com:3000/' + req.vhost[0]);
+  
+  // Validate the subdomain before using it in a redirect URL
+  const subdomain = req.vhost[0];
+  // Only allow alphanumeric characters and hyphens in valid hostnames
+  const validSubdomainPattern = /^[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?$/;
+  
+  if (!validSubdomainPattern.test(subdomain)) {
+    return res.status(400).send('Invalid subdomain');
+  }
+  
+  // Safe to use the validated subdomain in redirect URL
+  res.redirect('http://example.com:3000/' + subdomain);
 });
 
 // Vhost app
