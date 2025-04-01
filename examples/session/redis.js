@@ -16,11 +16,26 @@ var app = express();
 
 app.use(logger('dev'));
 
+// Get session secret from environment variable
+const sessionSecret = process.env.SESSION_SECRET;
+
+// In production, session secret is required
+if (process.env.NODE_ENV === 'production' && !sessionSecret) {
+  console.error('Error: SESSION_SECRET environment variable must be set in production.');
+  process.exit(1);
+} else if (!sessionSecret) {
+  // In development, warn about missing session secret
+  console.warn(
+    'Warning: SESSION_SECRET not set in environment. Using a fallback secret for development only.\n' +
+    'For production, use a strong, unique secret set via environment variable.'
+  );
+}
+
 // Populates req.session
 app.use(session({
   resave: false, // don't save session if unmodified
   saveUninitialized: false, // don't create session until something stored
-  secret: 'keyboard cat',
+  secret: sessionSecret || 'dev-environment-secret-a6f791e9e560e415', // Fallback for development
   store: new RedisStore
 }));
 
