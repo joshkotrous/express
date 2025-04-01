@@ -8,6 +8,7 @@ var express = require('../..');
 var hash = require('pbkdf2-password')()
 var path = require('path');
 var session = require('express-session');
+var crypto = require('crypto');
 
 var app = module.exports = express();
 
@@ -18,10 +19,26 @@ app.set('view engine', 'ejs');
 // middleware
 
 app.use(express.urlencoded());
+
+// Use environment variable for session secret or generate a random one for development
+let sessionSecret = process.env.SESSION_SECRET;
+
+// If no secret is provided through environment variables
+if (!sessionSecret) {
+  sessionSecret = crypto.randomBytes(32).toString('hex');
+  
+  // Only show warning when running the app directly (not when imported as a module)
+  if (!module.parent) {
+    console.warn('WARNING: SESSION_SECRET environment variable not set');
+    console.warn('Using a randomly generated secret. This is acceptable for development');
+    console.warn('but in production, always set SESSION_SECRET to a secure random string');
+  }
+}
+
 app.use(session({
   resave: false, // don't save session if unmodified
   saveUninitialized: false, // don't create session until something stored
-  secret: 'shhhh, very secret',
+  secret: sessionSecret,
   cookie: {
     httpOnly: true,
     secure: true,
@@ -119,7 +136,16 @@ app.post('/login', function (req, res, next) {
         req.session.success = 'Authenticated as ' + user.name
           + ' click to <a href="/logout">logout</a>. '
           + ' You may now access <a href="/restricted">/restricted</a>.';
-        res.redirect(req.get('Referrer') || '/');
+        
+        // Get the Referrer value
+        const referrer = req.get('Referrer');
+        // Only use the Referrer if it's a relative URL starting with / but not //
+        const safeRedirectUrl = 
+          (referrer && referrer.startsWith('/') && !referrer.startsWith('//') && referrer.indexOf(':') === -1) 
+          ? referrer 
+          : '/';
+        
+        res.redirect(safeRedirectUrl);
       });
     } else {
       req.session.error = 'Authentication failed, please check your '
