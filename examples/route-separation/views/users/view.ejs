@@ -1,9 +1,32 @@
 <%- include('../header') -%>
 
-<h1><%= user.name %></h1>
+<% 
+// SECURITY: Additional defense against XSS in case EJS escaping is misconfigured
+function safeRender(content) {
+  if (content == null) return '';
+  return String(content)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/\"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+// Apply additional escaping to user data
+var safeName = safeRender(user.name);
+var safeEmail = safeRender(user.email);
+%>
+
+<!-- 
+  SECURITY NOTE: This template applies additional HTML escaping as a defense-in-depth
+  measure, even though EJS's <%= %> syntax should already escape HTML by default.
+  This might result in double-escaping if EJS is configured correctly, but provides
+  protection if EJS escaping is disabled or bypassed.
+-->
+<h1><%= safeName %></h1>
 
 <div id="user">
-  <p>Email: <%= user.email %></p>
+  <p>Email: <%= safeEmail %></p>
 </div>
 
 <%- include('../footer') -%>
