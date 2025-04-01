@@ -34,6 +34,11 @@ function loadUser(req, res, next) {
 }
 
 function andRestrictToSelf(req, res, next) {
+  // First ensure the user is authenticated
+  if (!req.authenticatedUser) {
+    return next(new Error('Authentication required'));
+  }
+  
   // If our authenticated user is the user we are viewing
   // then everything is fine :)
   if (req.authenticatedUser.id === req.user.id) {
@@ -49,6 +54,11 @@ function andRestrictToSelf(req, res, next) {
 
 function andRestrictTo(role) {
   return function(req, res, next) {
+    // First ensure the user is authenticated
+    if (!req.authenticatedUser) {
+      return next(new Error('Authentication required'));
+    }
+    
     if (req.authenticatedUser.role === role) {
       next();
     } else {
@@ -58,11 +68,13 @@ function andRestrictTo(role) {
 }
 
 // Middleware for faux authentication
-// you would of course implement something real,
-// but this illustrates how an authenticated user
-// may interact with middleware
-
+// ⚠️ SECURITY WARNING: This is for demonstration purposes only!
+// In a production application, you MUST implement proper authentication with secure
+// identity verification instead of using a fixed user. This implementation makes
+// every request authenticate as the same user regardless of who is making the request.
 app.use(function(req, res, next){
+  // In a real application, this would verify user credentials
+  // and set req.authenticatedUser based on those credentials
   req.authenticatedUser = users[0];
   next();
 });
@@ -87,4 +99,5 @@ app.delete('/user/:id', loadUser, andRestrictTo('admin'), function(req, res){
 if (!module.parent) {
   app.listen(3000);
   console.log('Express started on port 3000');
+  console.log('⚠️ This is a DEMO with simplified authentication. Not suitable for production use.');
 }
