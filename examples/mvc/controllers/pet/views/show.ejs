@@ -4,12 +4,15 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <link rel="stylesheet" href="/style.css">
+<!-- Using <%= %> syntax to ensure pet.name is properly escaped for HTML attribute context -->
 <title><%= pet.name %></title>
 </head>
 
 <body>
+<!-- Using <%= %> syntax to ensure pet.name is properly escaped for HTML content -->
 <h1><%= pet.name %> <a href="/pet/<%= pet.id %>/edit">edit</a></h1>
 
+<!-- Using <%= %> syntax to ensure pet.name is properly escaped to prevent XSS -->
 <p>You are viewing <%= pet.name %></p>
 </body>
 </html>
