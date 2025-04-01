@@ -1,21 +1,32 @@
 <!DOCTYPE html>
+<!-- 
+SECURITY NOTICE:
+1. Always use {{}} (not {{{}}}) for user-controlled data to ensure HTML escaping
+2. Avoid helpers that bypass escaping (e.g., 'safe', 'unescape', etc.)
+3. Consider using URL encoding helpers for user data in URL contexts
+-->
 <html>
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <link rel="stylesheet" href="/style.css">
+  <!-- SECURITY: Use {{}} for HTML escaping -->
   <title>Edit {{user.name}}</title>
 </head>
 <body>
+  <!-- SECURITY: Use {{}} for HTML escaping -->
   <h1>{{user.name}}</h1>
+  <!-- SECURITY: Ideally use URL encoding for user.id in URL context -->
   <form action="/user/{{user.id}}?_method=put" method="post">
     <label for="user[name]">Name:
+      <!-- SECURITY: Use {{}} for HTML escaping -->
       <input type="text" name="user[name]" value="{{user.name}}">
     </label>
 
     <input type="submit" name="submit" value="Update">
   </form>
 
+  <!-- SECURITY: Ideally use URL encoding for user.id in URL context -->
   <form action="/user/{{user.id}}/pet" method="post">
     <label for="pet[name]">Pet:
       <input type="text" name="pet[name]" placeholder="Pet Name">
