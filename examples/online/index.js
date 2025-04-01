@@ -34,12 +34,27 @@ app.use(function(req, res, next){
 });
 
 /**
+ * Escape HTML special characters to prevent XSS.
+ */
+function escapeHtml(text) {
+  if (typeof text !== 'string') {
+    return '';
+  }
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/\"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+/**
  * List helper.
  */
 
 function list(ids) {
   return '<ul>' + ids.map(function(id){
-    return '<li>' + id + '</li>';
+    return '<li>' + escapeHtml(id) + '</li>';
   }).join('') + '</ul>';
 }
 
