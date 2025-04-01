@@ -44,7 +44,7 @@ describe('app.route', function(){
 
     app.route('/:foo')
     .get(function(req, res) {
-      res.send(req.params.foo);
+      res.type('text').send(req.params.foo);
     });
 
     request(app)
