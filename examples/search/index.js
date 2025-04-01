@@ -21,6 +21,9 @@ var db = redis.createClient();
 
 var app = express();
 
+// Define allowed Redis keys
+const ALLOWED_KEYS = ['ferret', 'cat'];
+
 app.use(express.static(path.join(__dirname, 'public')));
 
 // populate search
@@ -37,6 +40,12 @@ db.sadd('cat', 'luna');
 
 app.get('/search/:query?', function(req, res, next){
   var query = req.params.query;
+  
+  // Validate the query parameter against allowed keys
+  if (!query || !ALLOWED_KEYS.includes(query)) {
+    return res.status(400).json({ error: 'Invalid search query' });
+  }
+  
   db.smembers(query, function(err, vals){
     if (err) return next(err);
     res.send(vals);
