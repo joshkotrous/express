@@ -7,6 +7,7 @@
 var express = require('../..');
 var logger = require('morgan');
 var session = require('express-session');
+var crypto = require('crypto');
 
 // pass the express to the connect redis module
 // allowing it to inherit from session.Store
@@ -16,12 +17,23 @@ var app = express();
 
 app.use(logger('dev'));
 
+// Get session secret from environment variable or generate a random one
+const sessionSecret = process.env.SESSION_SECRET || crypto.randomBytes(32).toString('hex');
+
+// If no environment variable was set, warn the user
+if (!process.env.SESSION_SECRET) {
+  console.warn('WARNING: SESSION_SECRET environment variable not set. Using a random secret for this session. This is not suitable for production environments.');
+}
+
 // Populates req.session
 app.use(session({
   resave: false, // don't save session if unmodified
   saveUninitialized: false, // don't create session until something stored
-  secret: 'keyboard cat',
-  store: new RedisStore
+  secret: sessionSecret,
+  store: new RedisStore,
+  cookie: {
+    domain: process.env.COOKIE_DOMAIN || 'localhost' // Set the domain for the cookie
+  }
 }));
 
 app.get('/', function(req, res){
